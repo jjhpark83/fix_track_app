@@ -10,7 +10,7 @@ import io
 # ===========================================================================
 # ⚠️ 주의: 구글 시트 우측 상단 [공유] -> "링크가 있는 모든 사용자" 항목이 
 # 반드시 "편집자"로 설정되어 있어야 Streamlit 앱에서 저장이 가능합니다.
-GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/AKfycbxoryduQqqxPI7yxEtlFMNm13FQPwGEbZY4LyElLzPlbFsGYKRPJy8qWoazlsNFiXipUA/edit?usp=sharing"
+GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/15QOe-xrOxKNwckaKiexr9PGnqid6NVPFgJU5wTjhvDA/edit?usp=sharing"
 
 # 🔗 [★여기에 아까 복사한 구글 웹앱 URL 주소를 붙여넣으세요★]
 GOOGLE_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxoryduQqqxPI7yxEtlFMNm13FQPwGEbZY4LyElLzPlbFsGYKRPJy8qWoazlsNFiXipUA/exec"
