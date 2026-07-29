@@ -13,7 +13,7 @@ import io
 GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/AKfycbxoryduQqqxPI7yxEtlFMNm13FQPwGEbZY4LyElLzPlbFsGYKRPJy8qWoazlsNFiXipUA/edit?usp=sharing"
 
 # 🔗 [★여기에 아까 복사한 구글 웹앱 URL 주소를 붙여넣으세요★]
-GOOGLE_WEBAPP_URL = "https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbxoryduQqqxPI7yxEtlFMNm13FQPwGEbZY4LyElLzPlbFsGYKRPJy8qWoazlsNFiXipUA/exec"
+GOOGLE_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxoryduQqqxPI7yxEtlFMNm13FQPwGEbZY4LyElLzPlbFsGYKRPJy8qWoazlsNFiXipUA/exec"
 
 # 페이지 와이드 모드 및 타이트 설정
 st.set_page_config(page_title="FixTrack - 고장관리", page_icon="🛠️", layout="wide")
