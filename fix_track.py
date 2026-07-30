@@ -28,16 +28,19 @@ def get_sheet_id(url):
 SHEET_ID = get_sheet_id(GOOGLE_SHEET_URL)
 COLUMNS = ['공장', 'BAY(장소)', '고장내용', '발생일', '접수자', '접수자연락처', '수리내용', '수리일', '수리담당자']
 
+# 📲 텔레그램 메시지 발송 함수 (상세 에러 확인용 수정본)
 def send_telegram_message(message_text):
     if "여기에_" in TELEGRAM_BOT_TOKEN or not TELEGRAM_BOT_TOKEN:
         st.sidebar.warning("⚠️ 텔레그램 토큰 설정이 되어있지 않아 알림이 전송되지 않았습니다.")
         return False
         
-    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+    url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN.strip()}/sendMessage"
     success_count = 0
 
-    # TELEGRAM_CHAT_IDS 리스트 안의 모든 ID로 각각 발송
-    for chat_id in TELEGRAM_CHAT_IDS:
+    for raw_id in TELEGRAM_CHAT_IDS:
+        # ID 앞뒤 공백 제거 및 문자열 정제
+        chat_id = str(raw_id).strip().replace('"', '').replace("'", "")
+        
         payload = {
             "chat_id": chat_id,
             "text": message_text
@@ -46,10 +49,12 @@ def send_telegram_message(message_text):
             res = requests.post(url, json=payload, timeout=5)
             if res.status_code == 200:
                 success_count += 1
+                st.sidebar.success(f"📱 텔레그램 발송 성공! ({chat_id})")
             else:
-                st.sidebar.error(f"📱 텔레그램 전송 실패 ({chat_id}): {res.text}")
+                # 🛑 전송 실패 시 텔레그램에서 돌려준 정확한 에러 원인 표시
+                st.sidebar.error(f"📱 텔레그램 전송 실패 [{res.status_code}]: {res.text}")
         except Exception as e:
-            st.sidebar.error(f"📱 텔레그램 전송 오류 ({chat_id}): {e}")
+            st.sidebar.error(f"📱 텔레그램 통신 오류: {e}")
 
     return success_count > 0
 
