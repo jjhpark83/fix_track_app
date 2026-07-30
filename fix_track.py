@@ -28,19 +28,16 @@ def get_sheet_id(url):
 SHEET_ID = get_sheet_id(GOOGLE_SHEET_URL)
 COLUMNS = ['공장', 'BAY(장소)', '고장내용', '발생일', '접수자', '접수자연락처', '수리내용', '수리일', '수리담당자']
 
-# 📲 텔레그램 메시지 발송 함수 (상세 에러 확인용 수정본)
+# 📲 텔레그램 메시지 발송 함수
 def send_telegram_message(message_text):
     if "여기에_" in TELEGRAM_BOT_TOKEN or not TELEGRAM_BOT_TOKEN:
-        st.sidebar.warning("⚠️ 텔레그램 토큰 설정이 되어있지 않아 알림이 전송되지 않았습니다.")
+        st.session_state.tg_status = ("warning", "⚠️ 텔레그램 토큰 설정이 되어있지 않아 알림이 전송되지 않았습니다.")
         return False
         
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN.strip()}/sendMessage"
-    success_count = 0
-
+    
     for raw_id in TELEGRAM_CHAT_IDS:
-        # ID 앞뒤 공백 제거 및 문자열 정제
         chat_id = str(raw_id).strip().replace('"', '').replace("'", "")
-        
         payload = {
             "chat_id": chat_id,
             "text": message_text
@@ -48,15 +45,14 @@ def send_telegram_message(message_text):
         try:
             res = requests.post(url, json=payload, timeout=5)
             if res.status_code == 200:
-                success_count += 1
-                st.sidebar.success(f"📱 텔레그램 발송 성공! ({chat_id})")
+                st.session_state.tg_status = ("success", f"📱 텔레그램 발송 성공! ({chat_id})")
+                return True
             else:
-                # 🛑 전송 실패 시 텔레그램에서 돌려준 정확한 에러 원인 표시
-                st.sidebar.error(f"📱 텔레그램 전송 실패 [{res.status_code}]: {res.text}")
+                st.session_state.tg_status = ("error", f"📱 텔레그램 전송 실패 [{res.status_code}]: {res.text}")
+                return False
         except Exception as e:
-            st.sidebar.error(f"📱 텔레그램 통신 오류: {e}")
-
-    return success_count > 0
+            st.session_state.tg_status = ("error", f"📱 텔레그램 통신 오류: {e}")
+            return False
 
 # ===========================================================================
 # 2. 데이터 로드 및 저장 함수
@@ -107,6 +103,16 @@ df = st.session_state.live_data
 # 3. 사이드바: 🆕 신규 고장 접수 및 수리 처리 섹션
 # ===========================================================================
 st.sidebar.header("🆕 고장 접수 / 수리 등록")
+
+# 이전 전송 결과 메시지 사이드바 상단 표시
+if 'tg_status' in st.session_state and st.session_state.tg_status:
+    msg_type, msg_text = st.session_state.tg_status
+    if msg_type == "success":
+        st.sidebar.success(msg_text)
+    elif msg_type == "error":
+        st.sidebar.error(msg_text)
+    elif msg_type == "warning":
+        st.sidebar.warning(msg_text)
 
 if 'edit_index' not in st.session_state:
     st.session_state.edit_index = None
@@ -184,7 +190,6 @@ if submit_btn:
                     input_reporter.strip(), input_contact.strip(),
                     input_repair_desc.strip() if is_repaired else "", input_repair_date if is_repaired else "", input_repair_person.strip() if is_repaired else ""
                 ]
-                st.sidebar.success("💾 구글 스프레드시트 수리내용 수정 완료!")
                 st.session_state.edit_index = None
             else:
                 new_row = pd.DataFrame([[
@@ -193,9 +198,8 @@ if submit_btn:
                     input_repair_desc.strip() if is_repaired else "", input_repair_date if is_repaired else "", input_repair_person.strip() if is_repaired else ""
                 ]], columns=df.columns)
                 df = pd.concat([df, new_row], ignore_index=True)
-                st.sidebar.success("🎉 구글 스프레드시트 신규 고장 접수 완료!")
                 
-                # 📢 [신규 고장 접수 시 텔레그램 알림 발송]
+                # 📢 텔레그램 발송 함수 실행
                 msg = f"🚨 {input_factory.strip()} 신규접수\n- 장소: {input_bay.strip()}\n- 내용: {input_desc.strip()}\n- 접수자: {input_reporter.strip()}"
                 send_telegram_message(msg)
             
