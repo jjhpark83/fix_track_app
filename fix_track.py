@@ -28,23 +28,30 @@ def get_sheet_id(url):
 SHEET_ID = get_sheet_id(GOOGLE_SHEET_URL)
 COLUMNS = ['공장', 'BAY(장소)', '고장내용', '발생일', '접수자', '접수자연락처', '수리내용', '수리일', '수리담당자']
 
-# 📲 텔레그램 메시지 발송 함수
 def send_telegram_message(message_text):
     if "여기에_" in TELEGRAM_BOT_TOKEN or not TELEGRAM_BOT_TOKEN:
         st.sidebar.warning("⚠️ 텔레그램 토큰 설정이 되어있지 않아 알림이 전송되지 않았습니다.")
         return False
         
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-    payload = {
-        "chat_id": TELEGRAM_CHAT_IDS,
-        "text": message_text
-    }
-    try:
-        res = requests.post(url, json=payload, timeout=5)
-        return res.status_code == 200
-    except Exception as e:
-        st.sidebar.error(f"📱 텔레그램 전송 실패: {e}")
-        return False
+    success_count = 0
+
+    # TELEGRAM_CHAT_IDS 리스트 안의 모든 ID로 각각 발송
+    for chat_id in TELEGRAM_CHAT_IDS:
+        payload = {
+            "chat_id": chat_id,
+            "text": message_text
+        }
+        try:
+            res = requests.post(url, json=payload, timeout=5)
+            if res.status_code == 200:
+                success_count += 1
+            else:
+                st.sidebar.error(f"📱 텔레그램 전송 실패 ({chat_id}): {res.text}")
+        except Exception as e:
+            st.sidebar.error(f"📱 텔레그램 전송 오류 ({chat_id}): {e}")
+
+    return success_count > 0
 
 # ===========================================================================
 # 2. 데이터 로드 및 저장 함수
