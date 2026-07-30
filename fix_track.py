@@ -9,7 +9,7 @@ import io
 # 1. 환경 설정, 구글 시트 주소 및 텔레그램 설정
 # ===========================================================================
 GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/15QOe-xrOxKNwckaKiexr9PGnqid6NVPFgJU5wTjhvDA/edit?usp=sharing"
-GOOGLE_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxoryduQqqxPI7yxEtlFMNm13FQPwGEbZY4LyElLzPlbFsGYKRPJy8qWoazlsNFiXipUA/exec"
+GOOGLE_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxgXUROJBacDjLaWBzZaxGpvcuazsqfn9Tgnoeyeh02S8F_M1LpafNp1twIOwtyTNRUGA/exec"
 
 # 📱 [★텔레그램 연동 정보 입력★]
 TELEGRAM_BOT_TOKEN = "8845407511:AAHjJ-uVnHxvmtqaNo9KF5Rz3yNIUXC7Czo"
