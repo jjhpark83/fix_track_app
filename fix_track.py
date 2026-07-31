@@ -153,14 +153,14 @@ with st.sidebar.form(key='register_form', clear_on_submit=True):
     input_reporter = st.text_input("접수자", value=default_reporter)
     input_contact = st.text_input("접수자연락처", value=default_contact)
     
+    # 💡 [위치 수정] 접수자 연락처 입력창 바로 아래로 버튼을 올렸습니다.
+    submit_btn = st.form_submit_button(label=submit_label)
+    
     st.markdown("---")
     st.subheader("2. 수리 조치 내용 (완료 시 입력)")
-    # 💡 체크박스를 제거하고 바로 입력받도록 변경
     input_repair_desc = st.text_area("수리내용", value=default_repair_desc)
     input_repair_date = st.date_input("수리일", value=default_repair_date)
     input_repair_person = st.text_input("수리담당자", value=default_repair_person)
-    
-    submit_btn = st.form_submit_button(label=submit_label)
 
 if st.session_state.edit_index is not None:
     if st.sidebar.button("❌ 선택/수정 취소"):
@@ -169,7 +169,7 @@ if st.session_state.edit_index is not None:
 
 if submit_btn:
     if input_factory and input_desc and input_reporter:
-        # 💡 수리내용이나 수리담당자 중 하나라도 입력되어 있으면 자동으로 수리 완료 판단
+        # 수리내용이나 수리담당자 중 하나라도 입력되어 있으면 수리 완료 판단
         is_repaired = bool(input_repair_desc.strip() or input_repair_person.strip())
         
         repair_desc_val = input_repair_desc.strip() if is_repaired else ""
@@ -214,7 +214,6 @@ if submit_btn:
             st.sidebar.error("❌ 구글 웹앱 연결 실패! URL 주소나 배포 버전을 확인하세요.")
     else:
         st.sidebar.error("⚠️ 공장, 고장내용, 접수자는 필수 입력 사항입니다.")
-
 # ===========================================================================
 # 4. 메인 화면: 📊 통계 그래프 존
 # ===========================================================================
