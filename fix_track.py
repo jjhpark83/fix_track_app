@@ -45,7 +45,7 @@ def send_telegram_message(message_text):
         try:
             res = requests.post(url, json=payload, timeout=5)
             if res.status_code == 200:
-                st.session_state.tg_status = ("success", f"📱 텔레그램 발송 성공! ({chat_id})")
+                st.session_state.tg_status = ("success", f"📱 텔레그램 발송 성공!")
                 return True
             else:
                 st.session_state.tg_status = ("error", f"📱 텔레그램 전송 실패 [{res.status_code}]: {res.text}")
@@ -99,9 +99,9 @@ if 'live_data' not in st.session_state:
 
 df = st.session_state.live_data
 
-# ===========================================================================
+# ---------------------------------------------------------------------------
 # 3. 사이드바: 🆕 신규 고장 접수 및 수리 처리 섹션
-# ===========================================================================
+# ---------------------------------------------------------------------------
 st.sidebar.header("🆕 고장 접수 / 수리 등록")
 
 # 이전 전송 결과 메시지 사이드바 상단 표시
@@ -117,6 +117,7 @@ if 'tg_status' in st.session_state and st.session_state.tg_status:
 if 'edit_index' not in st.session_state:
     st.session_state.edit_index = None
 
+# 수정 모드 vs 신규 접수 모드 기본값 세팅
 if st.session_state.edit_index is not None:
     idx = st.session_state.edit_index
     st.sidebar.warning(f"⚠️ 현재 [{idx + 1}번 행] 수리 완료/수정 모드입니다.")
@@ -134,8 +135,8 @@ if st.session_state.edit_index is not None:
     
     submit_label = "💾 수리 완료 / 수정 저장"
 else:
-    default_factory = "1공장"
-    default_bay = "1베이"
+    default_factory = "2공장"
+    default_bay = ""
     default_desc = ""
     default_occ_date = datetime.now().date()
     default_reporter = ""
@@ -146,7 +147,11 @@ else:
     default_repair_person = ""
     submit_label = "📝 신규 고장 접수하기"
 
+# ---------------------------------------------------------------------------
+# [변경 포인트] 입력 요소를 일련의 컨테이너 형태로 배치하고 하단에 처리
+# ---------------------------------------------------------------------------
 with st.sidebar.form(key='register_form', clear_on_submit=True):
+    # 1. 고장 접수 기본 정보
     input_factory = st.text_input("공장 (예: 2공장)", value=default_factory)
     input_bay = st.text_input("BAY(장소) (예: 4베이)", value=default_bay)
     input_desc = st.text_area("고장내용", value=default_desc)
@@ -154,13 +159,17 @@ with st.sidebar.form(key='register_form', clear_on_submit=True):
     input_reporter = st.text_input("접수자", value=default_reporter)
     input_contact = st.text_input("접수자연락처", value=default_contact)
     
+    # 2. 접수/저장 버튼을 수리 체크박스 '위'에 배치하기 위한 버튼
+    submit_btn = st.form_submit_button(label=submit_label)
+    
     st.markdown("---")
+    st.markdown("🛠️ **수리 완료 처리 (필요시 입력)**")
+    
+    # 3. 수리 완료 관련 정보 (버튼 아래에 위치)
     is_repaired = st.checkbox("체크 시 수리 완료 처리", value=default_is_repaired)
     input_repair_desc = st.text_area("수리내용", value=default_repair_desc)
     input_repair_date = st.date_input("수리일", value=default_repair_date) if is_repaired else None
     input_repair_person = st.text_input("수리담당자", value=default_repair_person)
-    
-    submit_btn = st.form_submit_button(label=submit_label)
 
 if st.session_state.edit_index is not None:
     if st.sidebar.button("❌ 선택/수정 취소"):
