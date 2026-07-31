@@ -267,7 +267,7 @@ search_factory = st.selectbox(
     index=all_factory_options.index(st.session_state.selected_factory) if st.session_state.selected_factory in all_factory_options else 0
 )
 
-show_completed = st.checkbox("✅ 수리 완료된 항목도 조회 목록에 포함하기", value=True)
+show_completed = st.checkbox("✅ 수리 완료된 항목도 조회 목록에 포함하기", value=False)
 
 if search_factory != st.session_state.selected_factory:
     st.session_state.selected_factory = search_factory
