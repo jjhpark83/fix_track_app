@@ -12,7 +12,7 @@ GOOGLE_SHEET_URL = "https://docs.google.com/spreadsheets/d/15QOe-xrOxKNwckaKiexr
 GOOGLE_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxgXUROJBacDjLaWBzZaxGpvcuazsqfn9Tgnoeyeh02S8F_M1LpafNp1twIOwtyTNRUGA/exec"
 
 # 📱 [★텔레그램 연동 정보 입력★]
-TELEGRAM_BOT_TOKEN = "8845407511:AAHjJ-uVnHxvmtqaNo9KF5Rz3yNIUXC7Czo"
+TELEGRAM_BOT_TOKEN = "8845407511:AAHjJ-uVnHxvmtqaNo9KF5Rz3yNlUXC7Czo"
 TELEGRAM_CHAT_IDS = ["8903223590"]
 
 st.set_page_config(page_title="FixTrack - 고장관리", page_icon="🛠️", layout="wide")
