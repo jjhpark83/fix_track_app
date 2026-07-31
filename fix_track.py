@@ -99,9 +99,9 @@ if 'live_data' not in st.session_state:
 
 df = st.session_state.live_data
 
-# ---------------------------------------------------------------------------
+# ===========================================================================
 # 3. 사이드바: 🆕 신규 고장 접수 및 수리 처리 섹션
-# ---------------------------------------------------------------------------
+# ===========================================================================
 st.sidebar.header("🆕 고장 접수 / 수리 등록")
 
 # 이전 전송 결과 메시지 사이드바 상단 표시
@@ -117,7 +117,6 @@ if 'tg_status' in st.session_state and st.session_state.tg_status:
 if 'edit_index' not in st.session_state:
     st.session_state.edit_index = None
 
-# 수정 모드 vs 신규 접수 모드 기본값 세팅
 if st.session_state.edit_index is not None:
     idx = st.session_state.edit_index
     st.sidebar.warning(f"⚠️ 현재 [{idx + 1}번 행] 수리 완료/수정 모드입니다.")
@@ -129,11 +128,10 @@ if st.session_state.edit_index is not None:
     default_reporter = str(df.loc[idx, '접수자']) if idx < len(df) else ""
     default_contact = str(df.loc[idx, '접수자연락처']) if idx < len(df) else ""
     default_repair_desc = str(df.loc[idx, '수리내용']) if idx < len(df) else ""
-    default_is_repaired = pd.notna(df.loc[idx, '수리일']) and str(df.loc[idx, '수리일']).strip() != "" if idx < len(df) else False
-    default_repair_date = df.loc[idx, '수리일'] if default_is_repaired else datetime.now().date()
+    default_repair_date = df.loc[idx, '수리일'] if idx < len(df) and pd.notna(df.loc[idx, '수리일']) else datetime.now().date()
     default_repair_person = str(df.loc[idx, '수리담당자']) if idx < len(df) else ""
     
-    submit_label = "💾 수리 완료 / 수정 저장"
+    submit_label = "💾 저장하기 (수리내용 입력 시 완료 처리)"
 else:
     default_factory = "2공장"
     default_bay = ""
@@ -142,16 +140,12 @@ else:
     default_reporter = ""
     default_contact = "010-"
     default_repair_desc = ""
-    default_is_repaired = False
     default_repair_date = datetime.now().date()
     default_repair_person = ""
     submit_label = "📝 신규 고장 접수하기"
 
-# ---------------------------------------------------------------------------
-# [변경 포인트] 입력 요소를 일련의 컨테이너 형태로 배치하고 하단에 처리
-# ---------------------------------------------------------------------------
 with st.sidebar.form(key='register_form', clear_on_submit=True):
-    # 1. 고장 접수 기본 정보
+    st.subheader("1. 고장 접수 내용")
     input_factory = st.text_input("공장 (예: 2공장)", value=default_factory)
     input_bay = st.text_input("BAY(장소) (예: 4베이)", value=default_bay)
     input_desc = st.text_area("고장내용", value=default_desc)
@@ -159,17 +153,14 @@ with st.sidebar.form(key='register_form', clear_on_submit=True):
     input_reporter = st.text_input("접수자", value=default_reporter)
     input_contact = st.text_input("접수자연락처", value=default_contact)
     
-    # 2. 접수/저장 버튼을 수리 체크박스 '위'에 배치하기 위한 버튼
-    submit_btn = st.form_submit_button(label=submit_label)
-    
     st.markdown("---")
-    st.markdown("🛠️ **수리 완료 처리 (필요시 입력)**")
-    
-    # 3. 수리 완료 관련 정보 (버튼 아래에 위치)
-    is_repaired = st.checkbox("체크 시 수리 완료 처리", value=default_is_repaired)
+    st.subheader("2. 수리 조치 내용 (완료 시 입력)")
+    # 💡 체크박스를 제거하고 바로 입력받도록 변경
     input_repair_desc = st.text_area("수리내용", value=default_repair_desc)
-    input_repair_date = st.date_input("수리일", value=default_repair_date) if is_repaired else None
+    input_repair_date = st.date_input("수리일", value=default_repair_date)
     input_repair_person = st.text_input("수리담당자", value=default_repair_person)
+    
+    submit_btn = st.form_submit_button(label=submit_label)
 
 if st.session_state.edit_index is not None:
     if st.sidebar.button("❌ 선택/수정 취소"):
@@ -178,6 +169,13 @@ if st.session_state.edit_index is not None:
 
 if submit_btn:
     if input_factory and input_desc and input_reporter:
+        # 💡 수리내용이나 수리담당자 중 하나라도 입력되어 있으면 자동으로 수리 완료 판단
+        is_repaired = bool(input_repair_desc.strip() or input_repair_person.strip())
+        
+        repair_desc_val = input_repair_desc.strip() if is_repaired else ""
+        repair_date_val = str(input_repair_date) if is_repaired else ""
+        repair_person_val = input_repair_person.strip() if is_repaired else ""
+
         payload = {
             "factory": input_factory.strip(),
             "bay": input_bay.strip(),
@@ -185,27 +183,25 @@ if submit_btn:
             "occurrence_date": str(input_occ_date),
             "reporter": input_reporter.strip(),
             "reporter_contact": input_contact.strip(),
-            "repair_desc": input_repair_desc.strip() if is_repaired else "",
-            "repair_date": str(input_repair_date) if is_repaired else "",
-            "repair_person": input_repair_person.strip() if is_repaired else ""
+            "repair_desc": repair_desc_val,
+            "repair_date": repair_date_val,
+            "repair_person": repair_person_val
         }
         
         success = save_data_to_sheets(payload)
         
         if success:
+            save_row = [
+                input_factory.strip(), input_bay.strip(), input_desc.strip(), input_occ_date,
+                input_reporter.strip(), input_contact.strip(),
+                repair_desc_val, repair_date_val if is_repaired else "", repair_person_val
+            ]
+
             if st.session_state.edit_index is not None:
-                df.loc[st.session_state.edit_index] = [
-                    input_factory.strip(), input_bay.strip(), input_desc.strip(), input_occ_date,
-                    input_reporter.strip(), input_contact.strip(),
-                    input_repair_desc.strip() if is_repaired else "", input_repair_date if is_repaired else "", input_repair_person.strip() if is_repaired else ""
-                ]
+                df.loc[st.session_state.edit_index] = save_row
                 st.session_state.edit_index = None
             else:
-                new_row = pd.DataFrame([[
-                    input_factory.strip(), input_bay.strip(), input_desc.strip(), input_occ_date,
-                    input_reporter.strip(), input_contact.strip(),
-                    input_repair_desc.strip() if is_repaired else "", input_repair_date if is_repaired else "", input_repair_person.strip() if is_repaired else ""
-                ]], columns=df.columns)
+                new_row = pd.DataFrame([save_row], columns=df.columns)
                 df = pd.concat([df, new_row], ignore_index=True)
                 
                 # 📢 텔레그램 발송 함수 실행
@@ -238,12 +234,15 @@ if not df.empty:
             
     with col2:
         if not df.empty:
-            rep_status = pd.DataFrame({
-                '상태': ['수리 완료', '수리 대기'],
-                '건수': [len(df) - len(unrepaired_df), len(unrepaired_df)]
-            })
-            fig2 = px.pie(rep_status, values='건수', names='상태', title="⏳ 수리 처리 진행 비율", hole=0.3, color='상태',
-                          color_discrete_map={'수리 완료': '#2ECC71', '수리 대기': '#E74C3C'})
+            factory_all_counts = df['공장'].value_counts().reset_index()
+            factory_all_counts.columns = ['공장', '접수 건수']
+            fig2 = px.pie(
+                factory_all_counts, 
+                values='접수 건수', 
+                names='공장', 
+                title="🏭 공장별 고장 접수 비율", 
+                hole=0.3
+            )
             st.plotly_chart(fig2, use_container_width=True)
 else:
     st.info("통계를 표시할 데이터가 없습니다.")
