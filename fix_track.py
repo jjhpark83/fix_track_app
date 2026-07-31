@@ -13,7 +13,7 @@ GOOGLE_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxgXUROJBacDjLaWBzZ
 
 # 📱 [★텔레그램 연동 정보 입력★]
 TELEGRAM_BOT_TOKEN = "8845407511:AAHjJ-uVnHxvmtqaNo9KF5Rz3yNlUXC7Czo"
-TELEGRAM_CHAT_IDS = ["8903223590"]
+TELEGRAM_CHAT_IDS = ["-5148486197"]
 
 st.set_page_config(page_title="FixTrack - 고장관리", page_icon="🛠️", layout="wide")
 st.title("🛠️ FixTrack - 고장관리 시스템")
